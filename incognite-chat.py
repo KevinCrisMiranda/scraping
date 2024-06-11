@@ -1,18 +1,25 @@
+import time
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
-from selenium.webdriver.common.by import By
-import time
 
 # Configuración para no usar ningún perfil de usuario en Chrome
 chrome_options = Options()
 
-# Especificar la ubicación del ejecutable de Chrome
-chrome_options.binary_location = r'C:\Program Files (x86)\Google\Chrome\Application\chrome.exe'
+# Deshabilitar la carga de imágenes y el uso de la caché
+prefs = {"profile.managed_default_content_settings.images": 2, "disk-cache-size": 4096}
+chrome_options.add_experimental_option("prefs", prefs)
+
+# Ocultar los encabezados para evitar la detección de Selenium
+# chrome_options.add_argument("--headless")
+chrome_options.add_argument("--disable-gpu")
+chrome_options.add_argument("--no-sandbox")
+chrome_options.add_argument("--disable-dev-shm-usage")
+
+# Especificar la ubicación del ejecutable de Chrome en Ubuntu
+chrome_options.binary_location = '/usr/bin/google-chrome'
 
 # Configuración del servicio de ChromeDriver
 service = Service(ChromeDriverManager().install())
@@ -20,38 +27,27 @@ service = Service(ChromeDriverManager().install())
 # Inicialización del WebDriver
 driver = webdriver.Chrome(service=service, options=chrome_options)
 
-# Navegar a la página de ChatGPT
-driver.get('https://chatgpt.com/')
+# Navegar a la página de Google
+driver.get('https://www.google.com')
 
 try:
-    # Esperar hasta que el textarea esté presente
-    textarea = WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.ID, 'prompt-textarea'))
-    )
+    time.sleep(5)
 
-    # Borrar cualquier texto existente en el textarea
-    textarea.clear()
+    # Obtener el HTML del cuerpo de la página
+    body_html = driver.execute_script("return document.body.innerHTML")
+    # Analizar el HTML con BeautifulSoup
+    soup = BeautifulSoup(body_html, 'html.parser')
 
-    # Escribir en el textarea
-    textarea.send_keys("dame cualquier tipo de preguntas ponlas en una etiqueta <code> q a dentro tenga <uo> y cada una en una <li> solo las preguntas nomas nada mas")
+    # Suponiendo que 'soup' es tu objeto BeautifulSoup
+    inputs = soup.find_all('input')
 
-    # Esperar un momento para ver el resultado
-    time.sleep(1)
+    # Mostrar los valores de los atributos 'value' de todos los elementos <input>
+    for input_tag in inputs:
+        if 'value' in input_tag.attrs:
+            print("Valor del atributo 'value':", input_tag['value'])
 
-    # Intentar encontrar y hacer clic en el botón con data-testid="fruitjuice-send-button" o data-testid="send-button"
-    try:
-        send_button = WebDriverWait(driver, 1).until(
-            EC.presence_of_element_located((By.CSS_SELECTOR, '[data-testid="fruitjuice-send-button"]'))
-        )
-        send_button.click()
-    except:
-        send_button = WebDriverWait(driver, 1).until(
-            EC.presence_of_element_located((By.CSS_SELECTOR, '[data-testid="send-button"]'))
-        )
-        send_button.click()
-
-    # Esperar un momento para ver el resultado después de hacer clic
-    time.sleep(30)
+    # Tomar una captura de pantalla de la página
+    driver.save_screenshot('google_screenshot.png')
 
 finally:
     # Cerrar el navegador
