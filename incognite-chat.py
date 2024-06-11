@@ -2,6 +2,7 @@ import time
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By
 from webdriver_manager.chrome import ChromeDriverManager
 from bs4 import BeautifulSoup
 
@@ -21,8 +22,6 @@ chrome_options.add_argument("--disable-dev-shm-usage")
 # Especificar la ubicación del ejecutable de Chrome en Ubuntu
 chrome_options.binary_location = '/usr/bin/google-chrome'
 # chrome_options.binary_location = r'C:\Program Files (x86)\Google\Chrome\Application\chrome.exe'
-
-
 # Configuración del servicio de ChromeDriver
 service = Service(ChromeDriverManager().install())
 
@@ -33,7 +32,11 @@ driver = webdriver.Chrome(service=service, options=chrome_options)
 driver.get('https://www.google.com')
 
 try:
+    # Esperar un momento para que la página se cargue completamente
     time.sleep(5)
+
+    # Ajustar el tamaño de la ventana del navegador para que abarque toda la página
+    driver.set_window_size(1920, 1080)  # Tamaño de la ventana (ancho, alto)
 
     # Obtener el HTML del cuerpo de la página
     body_html = driver.execute_script("return document.body.innerHTML")
@@ -48,8 +51,8 @@ try:
         if 'value' in input_tag.attrs:
             print("Valor del atributo 'value':", input_tag['value'])
 
-    # Tomar una captura de pantalla de la página
-    driver.save_screenshot('google_screenshot.png')
+    # Tomar una captura de pantalla de la página completa
+    driver.save_screenshot('google_fullpage_screenshot.png')
 
 finally:
     # Cerrar el navegador
