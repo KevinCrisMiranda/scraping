@@ -52,7 +52,7 @@ try:
             print("Valor del atributo 'value':", input_tag['value'])
 
     # Tomar una captura de pantalla de la página completa
-    driver.save_screenshot('google_fullpage_screenshot.png')
+    driver.save_screenshot('google_screenshot.png')
 
 finally:
     # Cerrar el navegador
